@@ -1,4 +1,4 @@
-package com.mqq.agent.advisor;
+package com.mqq.agent.config.advisor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

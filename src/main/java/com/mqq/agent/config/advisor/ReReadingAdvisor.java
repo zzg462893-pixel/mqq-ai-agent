@@ -1,4 +1,4 @@
-package com.mqq.agent.advisor;
+package com.mqq.agent.config.advisor;
 
 import org.springframework.ai.chat.client.advisor.api.*;
 import reactor.core.publisher.Flux;
