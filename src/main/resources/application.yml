@@ -7,10 +7,14 @@ spring:
       chat:
         options:
           model: qwen-plus
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        model: deepseek-r1:8b
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      connect-timeout: 3s
+      timeout: 2s
+      password: 123456
 server:
   port: 8123
   servlet:
