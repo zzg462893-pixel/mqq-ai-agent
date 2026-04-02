@@ -1,16 +1,18 @@
 package com.mqq.agent.app;
 
+import com.mqq.agent.config.advisor.CustomLoggerAdvisor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
-
-import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
 @Component
 public class LoveApp {
@@ -25,6 +27,9 @@ public class LoveApp {
     @Autowired
     private ChatClient dsChatClient;
 
+    @Autowired
+    private VectorStore loveAppVectorStore;
+
     /**
      * 编写对话方法
      * @param message
@@ -35,7 +40,7 @@ public class LoveApp {
         ChatResponse chatResponse = dsChatClient.prompt()
                 .user(message)
                 .system(LOVE_APP_SYSTEM_PROMPT)
-                .advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, chatId))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
@@ -47,7 +52,7 @@ public class LoveApp {
         Flux<ChatResponse> chatResponseFlux = dsChatClient.prompt()
                 .user(message)
                 .system(LOVE_APP_SYSTEM_PROMPT)
-                .advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, chatId))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .stream()
                 .chatResponse();
         return chatResponseFlux.map(chatResponse -> chatResponse.getResults().get(0).getOutput().getText());
@@ -59,7 +64,7 @@ public class LoveApp {
             loveReport = dsChatClient.prompt()
                     .system(LOVE_APP_SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
                     .user(message)
-                    .advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, chatId))
+                    .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                     .call()
                     .entity(LoveReport.class);
         } catch (Exception e) {
@@ -67,6 +72,20 @@ public class LoveApp {
         }
         logger.info("loveReport: {}", loveReport);
         return loveReport;
+    }
+
+    public String doChatWithRag(String message, String chatId) {
+        ChatResponse chatResponse = dsChatClient.prompt()
+                .user(message)
+                .system(LOVE_APP_SYSTEM_PROMPT)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(List.of(
+                        new QuestionAnswerAdvisor(loveAppVectorStore),  // rag，应用知识库回答
+                        new CustomLoggerAdvisor()
+                ))
+                .call()
+                .chatResponse();
+        return chatResponse.getResult().getOutput().getText();
     }
 
     record LoveReport(String title, List<String> suggestions) {}
