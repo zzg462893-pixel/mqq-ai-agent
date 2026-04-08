@@ -7,6 +7,20 @@ spring:
       chat:
         options:
           model: qwen-plus
+      embedding:
+        options:
+          model: text-embedding-v3
+    vectorstore:
+      redis:
+        # 索引配置
+        index-name: love_app_vectors
+        prefix: "love_app:"           # Key 前缀
+        initialize-schema: true       # 自动初始化索引
+        # 向量配置
+        # vector-algorithm: FLAT        # 索引类型：FLAT 或 HNSW
+        # distance-type: COSINE         # 距离类型：COSINE, L2, IP
+        # dimensions: 1536              # 向量维度，dashscope text-embedding-v3 是 1536
+        # initial-capacity: 1000        # 初始容量
   data:
     redis:
       host: localhost
@@ -15,10 +29,12 @@ spring:
       connect-timeout: 3s
       timeout: 2s
       password: 123456
+
 server:
   port: 8123
   servlet:
     context-path: /api
+
 # springdoc-openapi
 springdoc:
   swagger-ui:
@@ -31,6 +47,7 @@ springdoc:
     - group: 'default'
       paths-to-match: '/**'
       packages-to-scan: com.mqq.agent.controller
+
 # knife4j
 knife4j:
   enable: true

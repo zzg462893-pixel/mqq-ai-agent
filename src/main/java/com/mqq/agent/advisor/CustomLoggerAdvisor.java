@@ -1,4 +1,4 @@
-package com.mqq.agent.config.advisor;
+package com.mqq.agent.advisor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,6 @@ public class CustomLoggerAdvisor implements BaseAdvisor {
 
     @Override
     public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
-        assert chatClientResponse.chatResponse() != null;
         logger.info("AI Response：{}", chatClientResponse.chatResponse().getResult().getOutput().getText());
         return chatClientResponse;
     }

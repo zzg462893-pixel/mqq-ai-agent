@@ -1,4 +1,4 @@
-package com.mqq.agent.config.aiModel;
+package com.mqq.agent.config;
 
 import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
@@ -9,16 +9,29 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.redis.RedisVectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import redis.clients.jedis.JedisPooled;
 
 @Configuration
 public class LLMConfig {
 
     @Value("${aliQwen-api}")
     private String apiKey;
+
+    @Value("${spring.ai.vectorstore.redis.index-name}")
+    private String indexName;
+
+    @Value("${spring.ai.vectorstore.redis.prefix}")
+    private String prefix;
+
+    @Value("${spring.ai.vectorstore.redis.initialize-schema}")
+    private boolean initializeSchema;
 
     private final String DEEPSEEK_MODEL = "deepseek-v3";
     private final String QWEN_MODEL = "qwen-plus";
@@ -76,5 +89,12 @@ public class LLMConfig {
                 .build();
     }
 
-
+    @Bean
+    public VectorStore createRedisVectorStore(JedisPooled jedisPooled, EmbeddingModel embeddingModel) {
+        return RedisVectorStore.builder(jedisPooled, embeddingModel)
+                .indexName(indexName)
+                .prefix(prefix)
+                .initializeSchema(initializeSchema)
+                .build();
+    }
 }

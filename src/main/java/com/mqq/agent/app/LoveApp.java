@@ -1,6 +1,6 @@
 package com.mqq.agent.app;
 
-import com.mqq.agent.config.advisor.CustomLoggerAdvisor;
+import com.mqq.agent.advisor.CustomLoggerAdvisor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -28,7 +28,7 @@ public class LoveApp {
     private ChatClient dsChatClient;
 
     @Autowired
-    private VectorStore loveAppVectorStore;
+    private VectorStore vectorStore;
 
     /**
      * 编写对话方法
@@ -80,7 +80,7 @@ public class LoveApp {
                 .system(LOVE_APP_SYSTEM_PROMPT)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(List.of(
-                        new QuestionAnswerAdvisor(loveAppVectorStore),  // rag，应用知识库回答
+                        new QuestionAnswerAdvisor(vectorStore),  // rag，应用知识库回答
                         new CustomLoggerAdvisor()
                 ))
                 .call()

@@ -56,19 +56,6 @@
             <version>1.0.0.2</version>
         </dependency>
 
-        <!-- 大模型响应结果的json结构化输出 -->
-        <dependency>
-            <groupId>com.github.victools</groupId>
-            <artifactId>jsonschema-generator</artifactId>
-            <version>4.38.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
-            <version>5.6.2</version>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -89,6 +76,13 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-markdown-document-reader</artifactId>
             <version>1.0.0-M6</version>
+        </dependency>
+
+        <!-- 添加 Redis 向量数据库依赖 -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
     </dependencies>

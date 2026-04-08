@@ -1,4 +1,4 @@
-package com.mqq.agent.config.chatMemory;
+package com.mqq.agent.chatMemory;
 
 import com.alibaba.cloud.ai.memory.redis.RedisChatMemoryRepository;
 import org.springframework.beans.factory.annotation.Value;
