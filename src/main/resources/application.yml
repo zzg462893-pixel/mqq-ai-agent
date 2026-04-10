@@ -7,9 +7,9 @@ spring:
       chat:
         options:
           model: qwen-plus
-      embedding:
-        options:
-          model: text-embedding-v3
+#      embedding:
+#        options:
+#          model: text-embedding-v3
     vectorstore:
       redis:
         # 索引配置
@@ -53,3 +53,7 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+# searchApi
+search-api:
+  api-key: "2V6pZ2LXxd6ddsVMCXeivjm4"

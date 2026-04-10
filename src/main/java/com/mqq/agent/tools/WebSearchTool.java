@@ -1,0 +1,45 @@
+package com.mqq.agent.tools;
+
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class WebSearchTool {
+
+    // Search的搜索接口地址
+    private static final String SEARCH_API_URL = "https://www.searchapi.io/api/v1/search";
+
+//    @Value("${search-api.api-key}")
+    private String apiKey = "2V6pZ2LXxd6ddsVMCXeivjm4";
+
+    @Tool(description = "Search for information from Baidu Search Engine")
+    public String searchWeb(@ToolParam(description = "Search query keyword") String query) {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("q", query);
+        paramMap.put("api_key", apiKey);
+        paramMap.put("engine", "baidu");
+        try {
+            String response = HttpUtil.get(SEARCH_API_URL, paramMap);
+            // 取出返回结果的前5条
+            JSONObject jsonObject = JSONUtil.parseObj(response);
+            // 提取 organic_results 部分
+            JSONArray organicResults = jsonObject.getJSONArray("organic_results");
+            List<Object> objects = organicResults.subList(0, 5);
+            // 拼接搜索结果为字符串
+            return objects.stream().map(obj -> {
+                JSONObject tmpJSONObject = (JSONObject) obj;
+                return tmpJSONObject.toString();
+            }).collect(Collectors.joining(","));
+        } catch (Exception e) {
+            return "Error searching Baidu：" + e.getMessage();
+        }
+    }
+}
