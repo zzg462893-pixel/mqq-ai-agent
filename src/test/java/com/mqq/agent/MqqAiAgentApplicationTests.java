@@ -1,8 +1,6 @@
 package com.mqq.agent;
 
-import com.mqq.agent.tools.FileOperationTool;
-import com.mqq.agent.tools.WeatherTools;
-import com.mqq.agent.tools.WebSearchTool;
+import com.mqq.agent.tools.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
@@ -49,6 +47,42 @@ class MqqAiAgentApplicationTests {
         WebSearchTool tool = new WebSearchTool();
         String query = "程序员鱼皮编程导航 codefather.cn";
         String result = tool.searchWeb(query);
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testScrapeWebPage() {
+        WebScrapingTool scrapingTool = new WebScrapingTool();
+        String result = scrapingTool.scrapeWebPage("https://www.codefather.cn");
+        assertNotNull(result);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testExecuteTerminalCommand() {
+        TerminalOperationTool tool = new TerminalOperationTool();
+        String command = "ls -l";
+        String result = tool.executeTerminalCommand(command);
+        assertNotNull(result);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testDownloadResource() {
+        ResourceDownloadTool tool = new ResourceDownloadTool();
+        String url = "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png";
+        String fileName = "logo.png";
+        String result = tool.downloadResource(url, fileName);
+        assertNotNull(result);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testGeneratePDF() {
+        PDFGenerationTool tool = new PDFGenerationTool();
+        String fileName = "编程导航原创项目.pdf";
+        String content = "编程导航原创项目 https://www.codefather.cn";
+        String result = tool.generatePDF(fileName, content);
         assertNotNull(result);
     }
 }

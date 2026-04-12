@@ -1,12 +1,14 @@
 package com.mqq.agent.app;
 
 import com.mqq.agent.advisor.CustomLoggerAdvisor;
+import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,9 @@ public class LoveApp {
 
     @Autowired
     private VectorStore vectorStore;
+
+    @Resource
+    private ToolCallback[] allTools;
 
     /**
      * 编写对话方法
@@ -90,6 +95,23 @@ public class LoveApp {
                 .chatResponse();
         return chatResponse.getResult().getOutput().getText();
     }
+
+
+    public String doChatWithTools(String message, String chatId) {
+        ChatResponse response = dsChatClient
+                .prompt()
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 开启日志，便于观察效果
+                .advisors(new CustomLoggerAdvisor())
+                .toolCallbacks(allTools)
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        logger.info("content: {}", content);
+        return content;
+    }
+
 
     record LoveReport(String title, List<String> suggestions) {}
 }
