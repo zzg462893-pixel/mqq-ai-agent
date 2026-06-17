@@ -69,7 +69,6 @@ public class LLMConfig {
                 .chatMemoryRepository(redisChatMemoryRepository)
                 .maxMessages(10)
                 .build();
-
         return ChatClient.builder(qwen)
                 .defaultOptions(ChatOptions.builder().model(QWEN_MODEL).build())
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(messageWindowChatMemory).build())

@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * 2、get方法：获取列表的长度并计算起始索引，如果不足n条，取0到最后一条；如果大于n条，获取最后lastN条消息，
  *   再使用range方法获取指定范围内的消息列表 redisTemplate.opsForList().range(key, startIndex, -1)
  */
+// todo: 对话记忆没有配置过期时间，导致对话记忆永远保留，需要优化
 @Configuration
 public class RedisChatMemory {
     @Value("${spring.data.redis.host}")

@@ -10,6 +10,7 @@ import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
 /**
  * 自定义日志 Advisor
  * 打印 info 级别日志、只输出单次用户提示词和 AI 回复的文本
+ * todo: 后续优化，记录调用大模型的请求和响应，以及消耗token数，保存到MySQL中
  */
 public class CustomLoggerAdvisor implements BaseAdvisor {
 
