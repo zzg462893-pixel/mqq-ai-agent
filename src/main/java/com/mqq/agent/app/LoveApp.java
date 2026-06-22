@@ -5,9 +5,12 @@ import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
+import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,16 +86,32 @@ public class LoveApp {
     }
 
     public String doChatWithRag(String message, String chatId) {
+
+        Advisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor.builder()
+                .documentRetriever(VectorStoreDocumentRetriever.builder()
+                        .similarityThreshold(0.50)
+                        .topK(3)
+                        .vectorStore(vectorStore)
+                        .build())
+                // 为了提供更友好的错误处理机制，ContextualQueryAugmenter允许自定义提示模板和rag检索为空时的提示模版
+                .queryAugmenter(ContextualQueryAugmenter.builder()
+                        .allowEmptyContext(true)
+//                        .promptTemplate(customPromptTemplate)
+//                        .emptyContextPromptTemplate(emptyContextPromptTemplate)
+                        .build())
+                .build();
+
         ChatResponse chatResponse = dsChatClient.prompt()
                 .user(message)
                 .system(LOVE_APP_SYSTEM_PROMPT)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(List.of(
-                        new QuestionAnswerAdvisor(vectorStore),  // rag，应用知识库回答
+                        retrievalAugmentationAdvisor,  // rag，应用知识库回答
                         new CustomLoggerAdvisor()
                 ))
                 .call()
                 .chatResponse();
+
         return chatResponse.getResult().getOutput().getText();
     }
 

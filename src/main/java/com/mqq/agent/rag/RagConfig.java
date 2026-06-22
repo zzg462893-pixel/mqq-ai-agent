@@ -40,6 +40,9 @@ public class RagConfig {
         this.resourcePatternResolver = resourcePatternResolver;
     }
 
+    // todo：当前会在每次启动项目时，都加载一遍文档并插入数据库，导致数据冗余
+    // TODO: 还需要开发一个rag知识库管理接口，对知识库内容进行增删改查的功能
+    // todo: 因为添加rag知识库不算是一个经常被反复操作的过程，所以可以使用ai大模型对加载的Document进行分割
     @Bean
     public VectorStore loadMarkdowns(JedisPooled jedisPooled, EmbeddingModel embeddingModel) {
         RedisVectorStore vectorStore = RedisVectorStore.builder(jedisPooled, embeddingModel)
