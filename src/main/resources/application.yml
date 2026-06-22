@@ -7,20 +7,17 @@ spring:
       chat:
         options:
           model: qwen-plus
-#      embedding:
-#        options:
-#          model: text-embedding-v3
     vectorstore:
       redis:
         # 索引配置
         index-name: love_app_vectors
         prefix: "love_app:"           # Key 前缀
         initialize-schema: true       # 自动初始化索引
-        # 向量配置
-        # vector-algorithm: FLAT        # 索引类型：FLAT 或 HNSW
-        # distance-type: COSINE         # 距离类型：COSINE, L2, IP
-        # dimensions: 1536              # 向量维度，dashscope text-embedding-v3 是 1536
-        # initial-capacity: 1000        # 初始容量
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/ai_agent?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
   data:
     redis:
       host: localhost
