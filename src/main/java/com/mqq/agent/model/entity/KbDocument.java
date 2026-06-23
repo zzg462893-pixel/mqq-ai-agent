@@ -64,7 +64,7 @@ public class KbDocument implements Serializable {
      * 1-生效 0-已删除
      */
     @TableField("status")
-    private Byte status;
+    private int status;
 
     @TableField("created_at")
     private LocalDateTime createdAt;

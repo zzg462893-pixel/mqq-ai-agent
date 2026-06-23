@@ -36,10 +36,16 @@ public class KbChunk implements Serializable {
     private String docId;
 
     /**
-     * 对应Redis中的Key
+     * redisKey的前缀
      */
-    @TableField("redis_key")
-    private String redisKey;
+    @TableField("redis_prefix")
+    private String redisPrefix;
+
+    /**
+     * 向量知识库的切片id
+     */
+    @TableField("redis_id")
+    private String redisId;
 
     /**
      * 切片序号(0,1,2...)
@@ -60,14 +66,20 @@ public class KbChunk implements Serializable {
     private String content;
 
     /**
+     * 切片分类（SpringAI生成）
+     */
+    @TableField("category")
+    private String category;
+
+    /**
      * 1-管理员手动微调过
      */
     @TableField("is_manual_edited")
-    private Byte isManualEdited;
+    private int isManualEdited;
 
     /**
      * 1-生效 0-已删除
      */
     @TableField("status")
-    private Byte status;
+    private int status;
 }

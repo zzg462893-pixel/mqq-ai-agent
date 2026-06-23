@@ -2,4 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mqq.agent.mapper.KbChunkMapper">
 
+    <select id="selectByDocId" resultType="com.mqq.agent.model.entity.KbChunk">
+        select * from kb_chunk kc
+        join kb_document kd on kc.doc_id = kd.doc_id
+        where kd.app_tag = #{appTag}
+        and kc.doc_id in
+        <foreach collection="docIds" item="docId" open="(" separator="," close=")">
+            #{docId}
+        </foreach>
+    </select>
 </mapper>

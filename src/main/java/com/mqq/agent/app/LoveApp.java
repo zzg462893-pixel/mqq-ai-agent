@@ -47,7 +47,7 @@ public class LoveApp {
     public String doChat(String message, String chatId) {
         ChatResponse chatResponse = dsChatClient.prompt()
                 .user(message)
-                .system(LOVE_APP_SYSTEM_PROMPT)
+//                .system(LOVE_APP_SYSTEM_PROMPT)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(List.of(
                         new CustomLoggerAdvisor()

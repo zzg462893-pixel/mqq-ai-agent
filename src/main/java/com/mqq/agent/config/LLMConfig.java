@@ -4,6 +4,7 @@ import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import com.alibaba.cloud.ai.memory.redis.RedisChatMemoryRepository;
+import com.mqq.agent.common.CommonConstant;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -20,9 +21,6 @@ public class LLMConfig {
     @Value("${aliQwen-api}")
     private String apiKey;
 
-    private final String DEEPSEEK_MODEL = "deepseek-v3";
-    private final String QWEN_MODEL = "qwen-plus";
-
     @Bean(name = "deepseek")
     public ChatModel deepSeek() {
         return DashScopeChatModel.builder()
@@ -30,7 +28,7 @@ public class LLMConfig {
                         .apiKey(apiKey)
                         .build())
                 .defaultOptions(
-                        DashScopeChatOptions.builder().withModel(DEEPSEEK_MODEL).build()
+                        DashScopeChatOptions.builder().withModel(CommonConstant.DEEPSEEK_MODEL).build()
                 )
                 .build();
     }
@@ -42,7 +40,7 @@ public class LLMConfig {
                         .build())
                 .defaultOptions(
                         DashScopeChatOptions.builder()
-                                .withModel(QWEN_MODEL)
+                                .withModel(CommonConstant.QWEN_MODEL)
                                 .build()
                 )
                 .build();
@@ -56,7 +54,7 @@ public class LLMConfig {
                 .maxMessages(10)
                 .build();
         return ChatClient.builder(deepSeek)
-                .defaultOptions(ChatOptions.builder().model(DEEPSEEK_MODEL).build())
+                .defaultOptions(ChatOptions.builder().model(CommonConstant.DEEPSEEK_MODEL).build())
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(messageWindowChatMemory).build())
                 .build();
     }
@@ -70,7 +68,7 @@ public class LLMConfig {
                 .maxMessages(10)
                 .build();
         return ChatClient.builder(qwen)
-                .defaultOptions(ChatOptions.builder().model(QWEN_MODEL).build())
+                .defaultOptions(ChatOptions.builder().model(CommonConstant.QWEN_MODEL).build())
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(messageWindowChatMemory).build())
                 .build();
     }
