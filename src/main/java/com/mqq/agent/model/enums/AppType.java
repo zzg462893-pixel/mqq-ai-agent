@@ -10,7 +10,7 @@ import java.util.Arrays;
 @Getter
 public enum AppType {
 
-    LOVE_APP("0", "恋爱大师应用");
+    LOVE_APP("love_app", "恋爱大师应用");
 
     /**
      * 应用类型编码

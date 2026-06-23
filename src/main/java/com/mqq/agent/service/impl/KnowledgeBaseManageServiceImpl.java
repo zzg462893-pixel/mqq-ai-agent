@@ -77,7 +77,11 @@ public class KnowledgeBaseManageServiceImpl implements KnowledgeBaseManageServic
     public BaseResponse<String> knowledgeBaseAdd(MultipartFile file, String appTag) {
         String resultMsg = "知识文档添加成功";
         String fileMD5 = "";
+        String content = "";
+        byte[] fileBytes;
         try {
+            fileBytes = file.getBytes();
+            content = new String(fileBytes, StandardCharsets.UTF_8);
             fileMD5 = calculateMD5(file);
         } catch (IOException e) {
             throw new BusinessException(ResultCode.FILE_PARES_ERROR);
@@ -96,23 +100,10 @@ public class KnowledgeBaseManageServiceImpl implements KnowledgeBaseManageServic
                 .eq(KbDocument::getAppTag, appTag));
         if (sameNameDoc != null) {
             resultMsg = "检测到《" + fileName + "》内容已更新，知识库已覆盖旧版本";
-            log.info("《{}》文档内容已更新，知识库已覆盖旧版本", fileName);
-            deleteDocumentList(sameNameDoc.getAppTag(), Collections.singletonList(sameNameDoc.getDocId()));
         }
-        List<Document> documents;
-        try {
-            // 将文档转换为 List<Document>
-            documents = convertToDocumentsWithLLM(file);
-        } catch (IOException e) {
-            throw new BusinessException(ResultCode.FILE_PARES_ERROR);
-        }
-        String docId = UUID.randomUUID().toString();
-        try {
-            // 添加知识库，保存MySQL和Redis
-            saveDocuments(docId, appTag, fileName, fileMD5, documents);
-        } catch (Exception e) {
-            throw new BusinessException(ResultCode.BUSINESS_ERROR, "知识库保存失败");
-        }
+
+        // 异步执行知识库添加或更新操作
+        asyncKnowledgeAddOrUpdate(sameNameDoc, fileBytes, content, fileName, fileMD5, appTag);
         return BaseResponse.success(resultMsg);
     }
 
@@ -259,8 +250,7 @@ public class KnowledgeBaseManageServiceImpl implements KnowledgeBaseManageServic
     /**
      * 使用 LLM 智能切割（推荐方案，更智能）
      */
-    private List<Document> convertToDocumentsWithLLM(MultipartFile file) throws IOException {
-        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+    private List<Document> convertToDocumentsWithLLM(String content, String filename, byte[] fileBytes) throws IOException {
         // 调用 LLM 进行智能分割
         ChatClient dsChatClient = ChatClient.builder(deepSeek)
                 .defaultOptions(ChatOptions.builder().model(CommonConstant.DEEPSEEK_MODEL).build())
@@ -273,20 +263,18 @@ public class KnowledgeBaseManageServiceImpl implements KnowledgeBaseManageServic
         String llmOutput = response.getResult().getOutput().getText();
         try {
             // 解析 JSON
-            return parseLLMResponse(llmOutput, file.getOriginalFilename());
+            return parseLLMResponse(llmOutput, filename);
         } catch (Exception e) {
             log.error("大模型分割结果解析失败，回退到规则分割", e);
-            return convertToDocuments(file); // 降级方案
+            return convertToDocuments(fileBytes, filename); // 降级方案
         }
     }
 
     /**
      * 将 MultipartFile 转换为 Document 列表（按原有规则分割）
      */
-    private static List<Document> convertToDocuments(MultipartFile file) throws IOException {
-        String filename = file.getOriginalFilename();
-        // 将 MultipartFile 转换为 Spring 的 Resource
-        ByteArrayResource resource = new ByteArrayResource(file.getBytes()) {
+    private static List<Document> convertToDocuments(byte[] fileByte, String filename) {
+        ByteArrayResource resource = new ByteArrayResource(fileByte) {
             @NotNull
             @Override
             public String getFilename() {
@@ -307,9 +295,6 @@ public class KnowledgeBaseManageServiceImpl implements KnowledgeBaseManageServic
             Document doc = documents.get(i);
             Map<String, Object> metadata = doc.getMetadata();
             metadata.put("chunkIndex", i);
-            // 保留 title 和内容
-            // 修改 Document 的 ID 为 docId + chunkIndex
-            // 注意：这里不设置 docId，因为外层会设置
         }
         return documents;
     }
@@ -357,5 +342,38 @@ public class KnowledgeBaseManageServiceImpl implements KnowledgeBaseManageServic
             docs.add(doc);
         }
         return docs;
+    }
+
+    /**
+     * 使用虚拟线程，异步执行知识库添加或更新操作
+     */
+    private void asyncKnowledgeAddOrUpdate(KbDocument sameNameDoc,
+                                           byte[] fileBytes,
+                                           String content,
+                                           String filename,
+                                           String fileMD5,
+                                           String appTag) {
+        Thread.startVirtualThread(() -> {
+
+            log.info("开始异步执行知识库添加或更新操作，应用标签：{}，文档名：{}", appTag, filename);
+            if (sameNameDoc != null) {
+                log.info("《{}》文档内容已更新，知识库已覆盖旧版本", filename);
+                deleteDocumentList(sameNameDoc.getAppTag(), Collections.singletonList(sameNameDoc.getDocId()));
+            }
+            List<Document> documents;
+            try {
+                // 使用大模型，将文档转换为 List<Document>
+                documents = convertToDocumentsWithLLM(content, filename, fileBytes);
+            } catch (IOException e) {
+                throw new BusinessException(ResultCode.FILE_PARES_ERROR);
+            }
+            String docId = UUID.randomUUID().toString();
+            try {
+                // 添加知识库，保存MySQL和Redis
+                saveDocuments(docId, appTag, filename, fileMD5, documents);
+            } catch (Exception e) {
+                throw new BusinessException(ResultCode.BUSINESS_ERROR, "知识库保存失败");
+            }
+        });
     }
 }
